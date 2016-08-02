@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: NAME
+  namespace: test-namespace
+  labels:
+    app: demo
+spec:
+  containers:
+  - name: busybox
+    image: busybox
+    command:
+    - sleep
+    - "3600"
+    ports:
+    - containerPort: 80

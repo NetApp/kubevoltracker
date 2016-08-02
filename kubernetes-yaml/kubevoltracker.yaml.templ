@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kubevoltracker
+  labels: 
+    name: kubevoltracker
+spec: 
+  containers: 
+    - resources:
+        limits:
+          cpu: 1.0
+      # Replace {REGISTRY} with the IP address with the address of a local
+      # registry.
+      image: {REGISTRY}/kubevoltracker
+      name: kubevoltracker
+      env:
+        - name: MYSQL_IP
+          value: localhost
+        - name: KUBERNETES_MASTER
+          # Change the value below to reflect the correct port.  If service
+          # performance becomes an issue, change the IP address half to the
+          # actual IP of the API server.
+          value: kubernetes:8080
+    - resources:
+        limits :
+          cpu: 0.5
+      image: mysql:5.6
+      name: mysql
+      env:
+        - name: MYSQL_ROOT_PASSWORD
+          # change this
+          value: root
+      ports: 
+        - containerPort: 3306
+          name: mysql
+      volumeMounts:
+          # name must match the volume name below
+        - name: mysql-persistent-storage
+          # mount path within the container
+          mountPath: /var/lib/mysql
+  volumes:
+    - name: mysql-persistent-storage
+      persistentVolumeClaim:
+        claimName: kubevoltracker-pvc
