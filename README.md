@@ -80,14 +80,16 @@ copy the binary, or build the project and copy the binary into the directory
 manually.  To create and run the image successfully, three build arguments
 can be provided:
 
-* `KUBERNETES_MASTER_IP`:  The IP address of the Kubernetes API server.
-* `KUBERNETES_MASTER_PORT`:  The port number of the Kubernetes API server.
+* `KUBERNETES_MASTER_IP`:  The insecure bind address of the Kubernetes API
+  server.
+* `KUBERNETES_MASTER_PORT`:  The insecure port of the Kubernetes API server.
 * `MYSQL_IP`:  The IP address of the backing MySQL database.
 
 These arguments are used to prepopulate the image's environment variables, 
 allowing it to be run without additional arguments.  Alternatively, the
 environment variables can be specified at run time, using command line arguments
 or, if running the image in Kubernetes, in the pod definition, described below.
+Note that we do not currently support secure connections to the API server.
 
 **Kubernetes Pod**
 
@@ -99,7 +101,7 @@ ReadWriteOnce PV with at least 1 GB of storage. To create the pod, the image for
 the kubevoltracker container must be modified to point to a local registry
 containing the kubevoltracker image, and it may be necessary to change the
 port of the API server, depending on the Kubernetes configuration.  The IP 
-ddress of the API server is discovered through the Service API and thus should
+address of the API server is discovered through the Service API and thus should
 not need to change, although specifying the IP address directly instead may
 improve performance and stability.
 
@@ -135,7 +137,7 @@ Querying
 ========
 
 We provide several sample queries under the `queries` subdirectory.  Although
-users can run the .sql queries directly, we recommend using the shell scripts
+users can run the SQL queries directly, we recommend using the shell scripts
 where provided.  Ad hoc queries against the database are also possible; we
 describe the schema in `documentation/proposal.md`.
 

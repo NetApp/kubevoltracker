@@ -27,6 +27,7 @@ from resources import *
 
 NFS_DIR_ENV = "LOAD_TEST_NFS_DIR"
 EXPORT_PATH_ENV = "LOAD_TEST_EXPORT_PATH"
+NFS_SERVER_ENV = "LOAD_TEST_NFS_SERVER"
 
 # Edit these contents to change the test parameters.  These are relatively
 # unimportant, however.
@@ -69,7 +70,7 @@ def InitRNG(seed):
 
 class LoadGenerator(object):
 
-	def __init__(self, maxPVs, maxPVCs, maxPods, nfs_dir, export_path):
+	def __init__(self, maxPVs, maxPVCs, maxPods, nfs_dir, server, export_path):
 		assert maxPVCs <= maxPVs, "Must not specify more PVCs than PVs."
 		assert maxPods <= maxPVCs, "Must not specify more pods than PVCs."
 
@@ -99,6 +100,12 @@ class LoadGenerator(object):
 			self.export_path = os.getenv(EXPORT_PATH_ENV)
 		assert self.export_path, ("Must specify NFS export path as a "
 			"command-line option or via %s" % EXPORT_PATH_ENV)
+		if server:
+			self.server = server
+		else:
+			self.server = os.getenv(NFS_SERVER_ENV)
+		assert self.server, ("Must specify NFS server as a "
+			"command-line option or via %s" % NFS_SERVER_ENV)
 
 	# CreateResource does the necessary busywork to create a Kubernetes
 	# resource.
@@ -144,7 +151,7 @@ class LoadGenerator(object):
 		def CreatePV(name):
 			nfs_path = os.path.join(self.nfs_dir, name)
 			export_path = os.path.join(self.export_path, name)
-			return PV(name, nfs_path, export_path, size)
+			return PV(name, nfs_path, self.server, export_path, size)
 		return self.CreateResource(ResourceType.pv, CreatePV)
 
 	def CreatePVC(self, max_size):
@@ -322,14 +329,18 @@ if __name__=="__main__":
 	parser.add_argument("-n", "--nfs_dir", help="Local directory where the NFS "
 		"share for the load test is mounted.  Can also specify with %s as an"
 		" environment variable" % NFS_DIR_ENV)
-	parser.add_argument("-s", "--seed", type=int, help="Seed for the RNG.  "
+	parser.add_argument("-s", "--server", help="IP address of the NFS server "
+		"from which the load test share is exported.  Can also specify with %s"
+		" as an environment variable" % NFS_SERVER_ENV)
+	parser.add_argument("-S", "--seed", type=int, help="Seed for the RNG.  "
 			"Will be automatically determined if unspecified.")
 	parser.add_argument("-e", "--export_path", help="Base export path for "
-			"NFS PVs.", default="/kubetest")
+			"NFS PVs.  Can also specify with %s as an environment variable"
+			% EXPORT_PATH_ENV) 
 	args = parser.parse_args()
 	InitPaths()
 	ClearExistingResources()
 	InitRNG(args.seed)
 	lg = LoadGenerator(args.max_pvs, args.max_pvcs, args.max_pods, args.nfs_dir,
-				args.export_path)
+				args.server, args.export_path)
 	lg.Run(args.time)

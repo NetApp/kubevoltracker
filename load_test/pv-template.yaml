@@ -8,5 +8,5 @@ spec:
   accessModes:
     - ReadWriteMany
   nfs:
-    server:  10.63.171.70
+    server:  PV_SERVER
     path: "PV_PATH"

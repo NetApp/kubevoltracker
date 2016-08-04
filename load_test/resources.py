@@ -188,9 +188,10 @@ class PV(Resource):
 	# PVs only support NFS for now.  We care about their name, size, and mount
 	# path.  export_path is the actual mount path, and nfs_path is a local
 	# directory that, when created, will create the export_path on the server.
-	def __init__(self, name, nfs_path, export_path, size):
+	def __init__(self, name, nfs_path, server, export_path, size):
 		self.size = size
 		self.nfs_path = nfs_path
+		self.server = server
 		self.export_path = export_path
 		self.pvc = None
 		if not os.path.exists(nfs_path):
@@ -216,7 +217,7 @@ class PV(Resource):
 	def PrepTemplate(self, filename):
 		SubstituteTemplateVars(filename,
 					(("NAME", self.name), ("PV_SIZE", "%d" % self.size),
-				("PV_PATH", self.export_path)))
+				("PV_SERVER", self.server), ("PV_PATH", self.export_path)))
 
 	def Delete(self):
 		shutil.rmtree(self.nfs_path)

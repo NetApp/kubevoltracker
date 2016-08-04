@@ -882,12 +882,13 @@ func TestPreexistingBind(t *testing.T) {
 
 	time.Sleep(time.Second)
 
-	// We want to initialize here, since we're caring about events that happened
-	// before Maestro was first brought up.
-	watcher.Watch(resources.PVs, true)
-	watcher.Watch(resources.PVCs, true)
-
-	//time.Sleep(time.Second)
+	// Although it's tempting to initialize here (i.e., use true instead of
+	// false), don't do so, because it breaks the database.  Using false should
+	// be equivalent, as the bind happens offline, anyway.
+	// TODO:  Fix this test so that it either initializes the database or
+	// operates on a different DB.
+	watcher.Watch(resources.PVs, false)
+	watcher.Watch(resources.PVCs, false)
 
 	pvUID, _ = GetMostRecentUIDTime(t, pvName, resources.PVs)
 	pvcUID, _ = GetMostRecentUIDTime(t, pvcName, resources.PVCs)
